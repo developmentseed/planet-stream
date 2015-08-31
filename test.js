@@ -1,3 +1,5 @@
-var pl = require('./');
+var planetStream = require('./');
 
-pl().pipe(process.stdout);
+planetStream().on('data', function (data) {
+  console.log(data);
+});
