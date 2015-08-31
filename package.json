@@ -1,0 +1,21 @@
+{
+  "name": "planet-stream",
+  "version": "0.0.1",
+  "description": "Join OSM metadata and data in one stream",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "osm",
+    "openstreetmap",
+    "stream"
+  ],
+  "author": "Marc Farra",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "node-expat": "2.3.5",
+    "request": "^2.61.0",
+    "through": "^2.3.8"
+  }
+}
