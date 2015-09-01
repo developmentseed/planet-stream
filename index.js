@@ -88,7 +88,6 @@ PlanetStream.prototype.run = function () {
           resultData.forEach(function (listItem) {
             var osmElement = JSON.parse(listItem);
             osmElement.metadata = JSON.parse(existResults[index][1]);
-            console.log(JSON.stringify(osmElement));
             stream.push(JSON.stringify(osmElement));
           });
         }
