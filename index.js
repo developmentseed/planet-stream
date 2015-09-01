@@ -25,7 +25,7 @@ PlanetStream.prototype.run = function () {
 
   MetaStream().pipe(split(JSON.parse)).on('data', function (data) {
     redis.set(data.id, JSON.stringify(data));
-    redis.expire(data.id, 600)
+    redis.expire(data.id, 600);
   });
 
   DataStream().pipe(split(JSON.parse)).on('data', function (data) {
@@ -34,7 +34,7 @@ PlanetStream.prototype.run = function () {
     redis.expire('data:' + data.changeset, 600);
   });
 
-  function delay () { setTimeout(next, 30000); }
+  function delay () { setTimeout(next, 60000); }
 
   function next () {
     redis.smembers('nometa')
@@ -43,7 +43,7 @@ PlanetStream.prototype.run = function () {
         return redis.get(id).then(function (metadata) {
           if (metadata) {
             var toPush = {};
-            toPush.metadata = metadata;
+            toPush.metadata = JSON.parse(metadata);
             toPush.elements = [];
             redis.lrange('data:' + id, 0, -1).then(function (elements) {
               elements.forEach(function (element) {
@@ -69,7 +69,7 @@ PlanetStream.prototype.run = function () {
       throw new Error('promise-chain', err);
     });
   }
-  next();
+  setTimeout(next, 30000);
 };
 
 module.exports = PlanetStream;

@@ -1,5 +1,5 @@
 var planetStream = require('./');
 
 planetStream().on('data', function (data) {
-  console.log(data);
+  console.log(data + '');
 });
