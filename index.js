@@ -42,14 +42,12 @@ PlanetStream.prototype.run = function () {
       return Promise.all(changesetIds.map(function (id) {
         return redis.get(id).then(function (metadata) {
           if (metadata) {
-            var toPush = {};
-            toPush.metadata = JSON.parse(metadata);
-            toPush.elements = [];
             redis.lrange('data:' + id, 0, -1).then(function (elements) {
               elements.forEach(function (element) {
-                toPush.elements.push(JSON.parse(element));
+                var toPush = JSON.parse(element);
+                toPush.metadata = JSON.parse(metadata);
+                stream.push(JSON.stringify(toPush) + '\n');
               });
-              stream.push(JSON.stringify(toPush) + '\n');
             }).catch(function (err) {
               throw new Error('lrange', err);
             });
