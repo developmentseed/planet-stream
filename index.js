@@ -1,115 +1,89 @@
 var MetaStream = require('./lib/streams/MetaStream.js');
-var DataStream = require('./lib/streams/DataStream.js');
-var split = require('split');
+var DataStream = require('./lib/streams/AugmentedDiffStream.js');
 var Redis = require('ioredis');
-var util = require('util');
-var Readable = require('stream').Readable;
-
-util.inherits(PlanetStream, Readable);
+var K = require('Kefir');
 
 function PlanetStream (opts) {
-  if (!(this instanceof PlanetStream)) return new PlanetStream(opts);
 
-  Readable.call(this, opts);
-  this.started = false;
-}
-
-PlanetStream.prototype._read = function () {
-  if (!this.started) {
-    this.run();
-    this.started = true;
-  }
-};
-
-PlanetStream.prototype.run = function () {
   var redis = new Redis();
-  var stream = this;
+  var metaStream = MetaStream();
+  var dataStream = DataStream();
 
   var dataPipeline = redis.pipeline();
   var metaPipeline = redis.pipeline();
 
-  var metaTimer, dataTimer = null;
-
-  MetaStream().pipe(split(JSON.parse)).on('data', function (data) {
-    // Send data to redis after debounce
-    clearTimeout(metaTimer);
-    metaTimer = setTimeout(function () {
-      metaPipeline.exec(function () {});
-      metaPipeline = redis.pipeline();
-    }, 2000);
-
+  metaStream.stream.map(JSON.parse).onValue(function (data) {
     metaPipeline.set(data.id, JSON.stringify(data));
     metaPipeline.expire(data.id, 600);
   });
 
-  DataStream().pipe(split(JSON.parse)).on('data', function (data) {
-    // Send data to redis after debounce
-    clearTimeout(dataTimer);
-    dataTimer = setTimeout(function () {
-      dataPipeline.exec(function () {});
-      dataPipeline = redis.pipeline();
-    }, 2000);
+  // When stream stops for 2 seconds, output data to redis
+  metaStream.stream.debounce(2000).onValue(function () {
+    metaPipeline.exec(function (err) {if (err) console.log(err); });
+    metaPipeline = redis.pipeline();
+  });
 
+  dataStream.stream.map(JSON.parse).onValue(function (data) {
     dataPipeline.lpush('data:' + data.changeset, JSON.stringify(data));
     dataPipeline.sadd('nometa', data.changeset);
     dataPipeline.expire('data:' + data.changeset, 600);
   });
 
-  function delay () { setTimeout(next, 60000); }
+  dataStream.stream.debounce(2000).onValue(function () {
+    dataPipeline.exec(function (err) { if (err) console.log(err); });
+    dataPipeline = redis.pipeline();
+  });
 
-  function changesetIdExists (changesetIds) {
-    var pipeline = redis.pipeline();
-    changesetIds.forEach(function (id) {
-      pipeline.get(id);
-    });
-    return pipeline.exec().then(function (results) {
-      return results.map(function (resultTuple, index) {
-        resultTuple[0] = changesetIds[index];
-        return resultTuple;
-      });
-    });
-  }
+  var changesetInRedis = K.fromPoll(60000, function () {
+    return K.fromPromise(redis.smembers('nometa'));
+  })
+  .flatMap()
+  .flatten()
+  .flatMap(function (id) {
+    return K.fromPromise(redis.exists(id).then(function (result) {
+      return [id, result];
+    }));
+  })
+  .delay(30000);
 
-  function joinData (existResults) {
-    var pipeline = redis.pipeline();
-    existResults.forEach(function (resultTuple) {
-      var id = resultTuple[0];
-      var metadata = resultTuple[1];
-      if (metadata) {
-        pipeline.lrange('data:' + id, 0, -1);
-      } else {
-        pipeline.sadd('staging', id);
-      }
-    });
-    return pipeline.exec().then(function (loadResults) {
-      loadResults.forEach(function (resultTuple, index) {
-        var resultData = resultTuple[1];
-        if (resultData !== 0 && resultData !== 1) { // data is not a sadd
-          resultData.forEach(function (listItem) {
-            var osmElement = JSON.parse(listItem);
-            osmElement.metadata = JSON.parse(existResults[index][1]);
-            stream.push(JSON.stringify(osmElement));
-          });
-        }
-      });
-    });
-  }
+  // Take all the changeset where we couldn't find a match and stage
+  // them back into a set
+  var addThingsToStaging = changesetInRedis.filter(function (resultTuple) {
+    return resultTuple[1] === 0;
+  }).map(function (resultTuple) {
+    return K.fromPromise(redis.sadd('staging', resultTuple[0]));
+  });
 
-  function next () {
-    redis.smembers('nometa')
-    .then(changesetIdExists)
-    .then(joinData)
-    .then(function () {
-      return redis.exists('staging').then(function () {
-        return redis.rename('staging', 'nometa');
+  // Take all the changesets that we know exist as data and metadata,
+  // grab the metadata and add to each element in data
+  var joinedElements = changesetInRedis.filter(function (resultTuple) {
+    return resultTuple[1] === 1;
+  }).flatMap(function (resultTuple) {
+    var changesetId = resultTuple[0];
+    return K.fromPromise(redis.get(changesetId).then(function (metadata) {
+      return redis.lrange('data:' + changesetId, 0, -1).then(function (elements) {
+        return elements.map(function (listItem) {
+          var osmElement = JSON.parse(listItem);
+          osmElement.metadata = JSON.parse(metadata);
+          return osmElement;
+        });
       });
-    })
-    .then(delay)
-    .catch(function (err) {
-      throw new Error('promise-chain', err);
+    }));
+  })
+  .flatten()
+  .map(JSON.stringify);
+
+  // When done with joining and staging, flush nometa by renaming
+  // the staging set to nometa
+  joinedElements.merge(addThingsToStaging)
+  .debounce(2000)
+  .onValue(function () {
+    return redis.exists('staging').then(function () {
+      return redis.rename('staging', 'nometa');
     });
-  }
-  setTimeout(next, 30000);
-};
+  });
+
+  return joinedElements;
+}
 
 module.exports = PlanetStream;
