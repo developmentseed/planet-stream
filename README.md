@@ -15,9 +15,4 @@ To try the planet stream:
 npm install
 ```
 
-3. Start the websocket server
-```
-node websocket-server.js
-```
-
-4. Visit `localhost:8000` using a web browser. Data might take about a minute to propagate from OSM to the browser.
+3. Run one of the examples in the `examples/` folder
