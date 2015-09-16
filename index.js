@@ -1,7 +1,7 @@
 var MetaStream = require('./lib/streams/MetaStream.js');
 var DataStream = require('./lib/streams/AugmentedDiffStream.js');
 var Redis = require('ioredis');
-var K = require('Kefir');
+var K = require('kefir');
 
 function PlanetStream (opts) {
 
