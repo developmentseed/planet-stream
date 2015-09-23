@@ -11,8 +11,8 @@ To try the planet stream:
 1. Start a [redis](http://redis.io/) server (for now works only with redis default port)
 
 2. Install `node` dependencies
-```
-npm install
-```
+  ```
+  npm install
+  ```
 
 3. Run one of the examples in the `examples/` folder
