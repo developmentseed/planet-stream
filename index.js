@@ -26,7 +26,7 @@ function PlanetStream (opts) {
   dataStream.stream.map(JSON.parse).onValue(function (data) {
     dataPipeline.set('data:' + data.changeset, JSON.stringify(data.elements));
     dataPipeline.sadd('nometa', data.changeset);
-    dataPipeline.expire(data.id, 6000);
+    dataPipeline.expire('data:' + data.changeset, 6000);
   });
 
   dataStream.stream.debounce(2000).onValue(function () {
@@ -35,7 +35,12 @@ function PlanetStream (opts) {
   });
 
   var changesetInRedis = K.fromPoll(60000, function () {
-    return K.fromPromise(redis.smembers('nometa'));
+    return K.fromPromise(
+	 redis.smembers('nometa').then(function (members) {
+	   return redis.del('nometa').then(function () {
+           	return members;
+           })
+    }));
   })
   .flatMap()
   .flatten()
