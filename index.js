@@ -14,7 +14,7 @@ function PlanetStream (opts) {
 
   metaStream.stream.map(JSON.parse).onValue(function (data) {
     metaPipeline.set(data.id, JSON.stringify(data));
-    metaPipeline.expire(data.id, 600);
+    metaPipeline.expire(data.id, 6000);
   });
 
   // When stream stops for 2 seconds, output data to redis
@@ -24,9 +24,9 @@ function PlanetStream (opts) {
   });
 
   dataStream.stream.map(JSON.parse).onValue(function (data) {
-    dataPipeline.lpush('data:' + data.changeset, JSON.stringify(data));
+    dataPipeline.set('data:' + data.changeset, JSON.stringify(data.elements));
     dataPipeline.sadd('nometa', data.changeset);
-    dataPipeline.expire('data:' + data.changeset, 600);
+    dataPipeline.expire('data:' + data.changeset, 6000);
   });
 
   dataStream.stream.debounce(2000).onValue(function () {
@@ -35,7 +35,12 @@ function PlanetStream (opts) {
   });
 
   var changesetInRedis = K.fromPoll(60000, function () {
-    return K.fromPromise(redis.smembers('nometa'));
+    return K.fromPromise(
+	 redis.smembers('nometa').then(function (members) {
+	   return redis.del('nometa').then(function () {
+           	return members;
+           })
+    }));
   })
   .flatMap()
   .flatten()
@@ -46,12 +51,17 @@ function PlanetStream (opts) {
   })
   .delay(30000);
 
-  // Take all the changeset where we couldn't find a match and stage
-  // them back into a set
-  var addThingsToStaging = changesetInRedis.filter(function (resultTuple) {
+  // Take all the changesets where we couldn't find a match and stage
+  // them back into nometa if the changeset still exists
+  changesetInRedis.filter(function (resultTuple) {
     return resultTuple[1] === 0;
   }).map(function (resultTuple) {
-    return K.fromPromise(redis.sadd('staging', resultTuple[0]));
+    var id = resultTuple[0];
+    return K.fromPromise(redis.exists(id).then(function (result) {
+      if (result) {
+        redis.sadd('nometa', id);
+      }
+    }));
   });
 
   // Take all the changesets that we know exist as data and metadata,
@@ -61,27 +71,15 @@ function PlanetStream (opts) {
   }).flatMap(function (resultTuple) {
     var changesetId = resultTuple[0];
     return K.fromPromise(redis.get(changesetId).then(function (metadata) {
-      return redis.lrange('data:' + changesetId, 0, -1).then(function (elements) {
-        return elements.map(function (listItem) {
-          var osmElement = JSON.parse(listItem);
-          osmElement.metadata = JSON.parse(metadata);
-          return osmElement;
-        });
+      return redis.get('data:' + changesetId).then(function (elements) {
+        var fullChangeset = {};
+        fullChangeset.metadata = JSON.parse(metadata);
+        fullChangeset.elements = JSON.parse(elements);
+        return fullChangeset;
       });
     }));
   })
-  .flatten()
   .map(JSON.stringify);
-
-  // When done with joining and staging, flush nometa by renaming
-  // the staging set to nometa
-  joinedElements.merge(addThingsToStaging)
-  .debounce(2000)
-  .onValue(function () {
-    return redis.exists('staging').then(function () {
-      return redis.rename('staging', 'nometa');
-    });
-  });
 
   return joinedElements;
 }
