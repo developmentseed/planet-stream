@@ -15,4 +15,13 @@ To try the planet stream:
   npm install
   ```
 
-3. Run one of the examples in the `examples/` folder
+3. Start the service 
+  ```
+  npm start
+  ```
+
+## Simulator
+Included in OSM Planet Stream is a simulator for generating testing data
+  ```
+  node bin/ops-simulator.js
+  ```

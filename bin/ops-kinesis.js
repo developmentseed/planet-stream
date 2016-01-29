@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Read and test kinesis streams
 
 // load environemntal variables
