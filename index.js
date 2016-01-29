@@ -1,1 +1,2 @@
-module.exports = require('./lib/planetstream')
+ps = require('./lib/planetstream')
+module.exports = ps.diff();
