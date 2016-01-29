@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "Marc Farra",
+  "author": "Matthew Hanson <matt@developmentseed.org>",
   "license": "BSD-3-Clause",
   "dependencies": {
     "dotenv": "2.2.0",
