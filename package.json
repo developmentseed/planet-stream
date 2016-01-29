@@ -14,6 +14,7 @@
   "author": "Marc Farra",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "dotenv": "2.0.0",
     "ioredis": "^1.7.5",
     "node-expat": "2.3.10",
     "request": "^2.61.0",
