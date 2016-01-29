@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // start planet-stream
-var planetstream = require('../');
+var planetstream = new (require('../'));
 
 // parse comments into hashtag list
 function getHashtags (str) {
