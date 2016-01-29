@@ -1,6 +1,6 @@
 {
-  "name": "planet-stream",
-  "version": "0.0.1",
+  "name": "osm-planet-stream",
+  "version": "0.1.0",
   "description": "Join OSM metadata and data in one stream",
   "main": "index.js",
   "scripts": {
@@ -17,6 +17,10 @@
     "ioredis": "^1.7.5",
     "node-expat": "2.3.10",
     "request": "^2.61.0",
-    "through": "^2.3.8"
+    "through": "^2.3.8",
+    "ramda": "0.19.1",
+    "request-promise": "2.0.0",
+    "kefir": "3.2.0",
+    "aws-sdk": "2.2.33"
   }
 }
