@@ -1,0 +1,14 @@
+{
+  "name": "osm-planet-stream kinesis",
+  "version": "0.1.0",
+  "description": "Add planet-stream data to AWS Kinesis",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Marc Farra",
+  "license": "BSD-3-Clause",
+  "dependencies": {
+    "aws-sdk": "2.2.33",
+  }
+}

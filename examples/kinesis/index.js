@@ -3,7 +3,7 @@
 // load environemntal variables
 require('dotenv').config()
 
-var planetStream = require('./lib/planetstream.js');
+var planetStream = require('../');
 var kinesis = require('./lib/kinesis.js');
 var R = require('ramda');
 
