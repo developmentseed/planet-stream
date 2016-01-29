@@ -9,6 +9,7 @@
   "author": "Marc Farra",
   "license": "BSD-3-Clause",
   "dependencies": {
+    "dotenv": "2.2.0",
     "aws-sdk": "2.2.33",
   }
 }
