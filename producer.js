@@ -1,7 +1,7 @@
 var planetStream = require('../../');
 var AWS = require('aws-sdk');
 var R = require('ramda');
-AWS.config.region = 'us-west-1';
+AWS.config.region = 'us-east-1';
 var kinesis = new AWS.Kinesis();
 
 var diffs = planetStream();
