@@ -1,8 +1,13 @@
-var planetStream = require('../../');
-var AWS = require('aws-sdk');
+// OSM Planet Stream service
+
+// load environemntal variables
+require('dotenv').config()
+
+var planetStream = require('./lib/planetstream.js');
+var kinesis = require('./lib/kinesis.js');
 var R = require('ramda');
-AWS.config.region = 'us-east-1';
-var kinesis = new AWS.Kinesis();
+
+streamname = 'osmsim'
 
 var diffs = planetStream();
 
@@ -38,9 +43,9 @@ diffs.map(JSON.parse)
     var dataParams = {
       Data: data,
       PartitionKey: obj.metadata.id,
-      StreamName: 'osmgeoweek'
+      StreamName: process.env.STREAM_NAME
     };
-    kinesis.putRecord(dataParams, function (err, data) {
+    kinesis.kin.putRecord(dataParams, function (err, data) {
       if (err) console.err(err);
       else console.log(data);
     });
