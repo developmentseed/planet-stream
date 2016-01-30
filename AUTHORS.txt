@@ -1,4 +1,4 @@
 Authors ordered by first contribution
 
 Marc Farra <marc@developmentseed.org>
-Matthew Hanson <matt@developmentseed.org>
+Matthew Hanson <matthew@developmentseed.org>
