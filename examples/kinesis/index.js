@@ -1,11 +1,19 @@
-var planetStream = require('../../');
-var AWS = require('aws-sdk');
-var R = require('ramda');
-AWS.config.region = 'us-west-1';
-var kinesis = new AWS.Kinesis();
+// OSM Planet Stream service
 
+// load environemntal variables
+require('dotenv').config()
+
+var planetStream = require('../');
+var kinesis = require('./lib/kinesis.js');
+var R = require('ramda');
+
+var tracked = ['#missingmaps'];
+
+
+// start planet-stream
 var diffs = planetStream();
 
+// parse comments into hashtag list
 function getHashtags (str) {
   if (!str) return [];
   var wordlist = str.split(' ');
@@ -20,8 +28,7 @@ function getHashtags (str) {
   return hashlist;
 }
 
-var tracked = ['#osmgeoweek', '#missingmaps', '#hotosm-afghanistan-eq-1264', '#PeaceCorps'];
-
+// filter data for hashtags
 diffs.map(JSON.parse)
 .filter(function (data) {
   if (!data.metadata || !data.metadata.comment) {
@@ -32,16 +39,17 @@ diffs.map(JSON.parse)
 //  return intersection.length > 0;
   return hashtags.length > 0;
 })
+// add a complete record to kinesis
 .onValue(function (obj) { 
   var data = JSON.stringify(obj)
   if (obj.metadata) {
     var dataParams = {
       Data: data,
       PartitionKey: obj.metadata.id,
-      StreamName: 'osmgeoweek'
+      StreamName: process.env.STREAM_NAME
     };
-    kinesis.putRecord(dataParams, function (err, data) {
-      if (err) console.err(err);
+    kinesis.kin.putRecord(dataParams, function (err, data) {
+      if (err) console.error(err);
       else console.log(data);
     });
   } else {
