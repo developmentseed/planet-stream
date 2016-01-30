@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 
 // start planet-stream
-var planetstream = new (require('../'));
+var argv = require('minimist')(process.argv.slice(2));
+var planetstream = require('../')({verbose: argv.v});
+var R = require('ramda');
 
 // parse comments into hashtag list
 function getHashtags (str) {
@@ -18,17 +20,19 @@ function getHashtags (str) {
   return hashlist;
 }
 
-// filter data here if desired
+// Filter out records that have no metadata
 planetstream.map(JSON.parse)
 .filter(function (data) {
-  return true;
+  if (argv['hashtags']) {
+    if (data.metadata && data.metadata.comment) {
+      return getHashtags(data.metadata.comment).length > 0;
+    }
+  } else {
+    return data.hasOwnProperty('metadata');
+  }
 })
 // print out record
-.onValue(function (obj) { 
+.onValue(function (obj) {
   var payload = JSON.stringify(obj)
-  if (obj.metadata) {
-  	console.log(payload);
-  } else {
-    console.log('No metadata for ' + obj);
-  }
+  console.log(payload);
 });
