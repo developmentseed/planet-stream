@@ -9,22 +9,24 @@ Requirements
 - nodejs
 - redis server
 
-1. To run planet-stream as a service, first create a .env file to set environment variables. There is a sample.env to use as a starting point.
+1. Start a [redis](http://redis.io/) server (for now works only with redis default port)
 
-2. Start a [redis](http://redis.io/) server (for now works only with redis default port)
-
-3. Install `node` dependencies
+2. Install
   ```
-  npm install
+  npm install -g planet-stream
   ```
 
-3. Start the service 
+3. Start
   ```
-  node index.js
+  planet-stream [-v] [--hashtags]
   ```
+
+Options:
+ - -v : verbose logging (for debugging)
+ - --hashtags : only output changesets that contain a 'hashtag' in the comment
 
 ## Simulator
-Included in OSM Planet Stream is a simulator for generating testing data
+Included in the repo is a simulator for generating test data that has the same schema as `planet-stream` (useful for debugging downstream apps without waiting for OSM)
   ```
   bin/ops-simulator.js
   ```
