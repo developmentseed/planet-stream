@@ -2,8 +2,12 @@
 
 // start planet-stream
 var argv = require('minimist')(process.argv.slice(2));
-var planetstream = require('../')({verbose: argv.v});
 var R = require('ramda');
+var planetstream = require('../')({
+  verbose: argv.v,
+  host: process.env.REDIS_PORT_6379_TCP_ADDR || process.env.REDIS_HOST || '127.0.0.1',
+  port: process.env.REDIS_PORT_6379_TCP_PORT || process.env.REDIS_PORT || 6379
+});
 
 // parse comments into hashtag list
 function getHashtags (str) {

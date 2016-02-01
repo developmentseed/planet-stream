@@ -1,0 +1,8 @@
+redis:
+  image: redis
+  ports:
+    - '6379'
+app:
+  build: .
+  links:
+    - redis

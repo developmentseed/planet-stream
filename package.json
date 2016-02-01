@@ -18,15 +18,16 @@
   "author": "Development Seed",
   "license": "BSD-3-Clause",
   "dependencies": {
-    "ioredis": "^1.7.5",
-    "node-expat": "2.3.10",
-    "request": "^2.61.0",
-    "through": "^2.3.8",
-    "ramda": "0.19.1",
-    "request-promise": "2.0.0",
-    "kefir": "3.2.0",
-    "shortid": "^2.2.2",
     "chance": "^0.8.0",
-    "moment": "^2.11.1"
+    "ioredis": "^1.7.5",
+    "kefir": "3.2.0",
+    "minimist": "^1.2.0",
+    "moment": "^2.11.1",
+    "node-expat": "2.3.10",
+    "ramda": "0.19.1",
+    "request": "^2.61.0",
+    "request-promise": "2.0.0",
+    "shortid": "^2.2.2",
+    "through": "^2.3.8"
   }
 }
