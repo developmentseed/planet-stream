@@ -5,7 +5,7 @@
 // load environemntal variables
 require('dotenv').config()
 
-kinesis = require('../lib/kinesis.js');
+kinesis = require('../lib/utils/kinesis.js');
 
 kinesis.DescribeStream(process.env.STREAM_NAME).then(console.log);
 

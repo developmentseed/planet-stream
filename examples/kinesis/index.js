@@ -4,7 +4,7 @@
 require('dotenv').config()
 
 var planetStream = require('../');
-var kinesis = require('./lib/kinesis.js');
+var kinesis = require('./lib/utils/kinesis.js');
 var R = require('ramda');
 
 var tracked = ['#missingmaps'];
