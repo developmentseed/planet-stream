@@ -29,5 +29,9 @@
     "request-promise": "2.0.0",
     "shortid": "^2.2.2",
     "through": "^2.3.8"
+  },
+  "devDependencies": {
+    "split": "^1.0.0",
+    "through": "^2.3.8"
   }
 }
