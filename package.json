@@ -1,6 +1,6 @@
 {
   "name": "planet-stream",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Join OSM metadata and data in one stream",
   "main": "index.js",
   "scripts": {
