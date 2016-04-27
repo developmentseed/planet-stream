@@ -5,11 +5,11 @@ var argv = require('minimist')(process.argv.slice(2));
 
 var R = require('ramda');
 var planetstream = require('../')({
-  verbose: argv.v,
   limit: argv.limit,
   host: process.env.REDIS_PORT_6379_TCP_ADDR || process.env.REDIS_HOST || '127.0.0.1',
   port: process.env.REDIS_PORT_6379_TCP_PORT || process.env.REDIS_PORT || 6379
 });
+
 
 // parse comments into hashtag list
 function getHashtags (str) {
@@ -39,6 +39,6 @@ planetstream.map(JSON.parse)
 })
 // print out record
 .onValue(function (obj) {
-  var payload = JSON.stringify(obj)
+  var payload = JSON.stringify(obj);
   console.log(payload);
 });
