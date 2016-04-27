@@ -4,5 +4,7 @@ redis:
     - '6379'
 app:
   build: .
+  environment:
+    - LOG_LEVEL='debug'
   links:
     - redis
