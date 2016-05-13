@@ -6,5 +6,7 @@ app:
   build: .
   environment:
     - LOG_LEVEL='debug'
+    - REDIS_PORT = 6379
+    - REDIS_HOST = redis
   links:
     - redis

@@ -1,4 +1,8 @@
-var planetStream = require('../../');
+var planetStream = require('../../')({
+  host: process.env.REDIS_HOST || '127.0.0.1',
+  port: process.env.REDIS_PORT || 6379
+});
+
 var diffs = planetStream();
 var R = require('ramda');
 
@@ -15,16 +19,13 @@ function getHashtags (str) {
   return hashlist;
 }
 
-var tracked = ['#hotosm-project-1257', '#huracanpatricia'];
-
 diffs.map(JSON.parse)
 .filter(function (data) {
   if (!data.metadata.comment) {
     return false;
   }
   var hashtags = getHashtags(data.metadata.comment);
-  var intersection = R.intersection(hashtags, tracked);
-  return intersection.length > 0;
+  return hashtags.length > 0;
 })
 .onValue(function (data) {
   console.log(data.metadata);
